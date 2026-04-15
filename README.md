@@ -58,15 +58,14 @@ Platforma ļauj analizēt izdevumus, grupēt tos pa kategorijām un eksportēt r
 ## 🧱 Sistēmas arhitektūra
 
 ```mermaid
-graph TD
+flowchart LR
 
-User[👤 Lietotājs]
-
-Frontend[💻 Frontend (React)]
-Backend[⚙️ Backend (FastAPI)]
-DB[(🗄️ PostgreSQL)]
-OCR[🔎 OCR (pytesseract)]
-AI[🧠 Ollama (LLaVA)]
+User["Lietotājs"]
+Frontend["Frontend (React)"]
+Backend["Backend (FastAPI)"]
+DB["PostgreSQL"]
+OCR["OCR (pytesseract)"]
+AI["Ollama (LLaVA)"]
 
 User --> Frontend
 Frontend -->|HTTP (Axios)| Backend
