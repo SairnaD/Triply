@@ -25,27 +25,27 @@ Platforma ļauj analizēt izdevumus, grupēt tos pa kategorijām un eksportēt r
 ---
 ## ⚙️ Funkcionalitāte
 
-# 🧳 Ceļojumu pārvaldība
+### 🧳 Ceļojumu pārvaldība
 - Izveidot jaunu ceļojumu
 - Izvēlēties esošu ceļojumu
 - Dzēst ceļojumu (kopā ar dokumentiem)
 
-# 📄 Dokumentu apstrāde
+### 📄 Dokumentu apstrāde
 - Augšupielādēt čekus (PNG, JPG, PDF)
 - Automātiska dokumentu analīze
 - Statusa attēlošana (processing, done, error)
 
-# ✏️ Dokumentu pārvaldība
+### ✏️ Dokumentu pārvaldība
 - Apskatīt dokumentu sarakstu
 - Rediģēt datus (summa, kategorija, datums)
 - Dzēst dokumentus
 
-# 📊 Datu analīze
+### 📊 Datu analīze
 - Izdevumu sadalījums pa kategorijām (diagramma)
 - Kopējā summa
 - Dokumentu skaits
 
-# 📥 Datu eksports
+### 📥 Datu eksports
 - Eksportēt datus Excel failā
 - Iekļautie dati:
     + datums
@@ -92,30 +92,30 @@ flowchart LR
 ---
 ## 🚀 Uzstādīšana un palaišana
 
-# 🔧 Prasības
+### 🔧 Prasības
 
 - Docker
 - Docker Compose
 
-# 📥 1. Klonēt repozitoriju
+### 📥 1. Klonēt repozitoriju
 ```bash
 git clone https://github.com/your-username/your-repo.git
 cd your-repo
 ```
 
-# ⚙️ 2. Palaist sistēmu
+### ⚙️ 2. Palaist sistēmu
 ```bash
 docker-compose up --build
 ```
 
-# ⏳ 3. Sagaidīt inicializāciju
+### ⏳ 3. Sagaidīt inicializāciju
 
 Pirmajā palaišanas reizē:
 
 - tiks lejupielādēts LLaVA modelis (tas var aizņemt laiku);
 - tiks izveidota datu bāze.
 
-# 🌐 4. Atvērt aplikāciju
+### 🌐 4. Atvērt aplikāciju
 
 Frontend būs pieejams:
 
@@ -129,7 +129,7 @@ Backend API:
 http://localhost:8000
 ```
 
-# 🧪 5. Lietošana
+### 🧪 5. Lietošana
 
 1. Izveido jaunu ceļojumu
 2. Augšupielādē čeku
