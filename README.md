@@ -60,25 +60,24 @@ Platforma ļauj analizēt izdevumus, grupēt tos pa kategorijām un eksportēt r
 ```mermaid
 flowchart LR
 
-User["Lietotājs"]
-Frontend["Frontend (React)"]
-Backend["Backend (FastAPI)"]
-DB["PostgreSQL"]
-OCR["OCR (pytesseract)"]
-AI["Ollama (LLaVA)"]
+    User["Lietotājs"]
+    Frontend["Frontend (React)"]
+    Backend["Backend (FastAPI)"]
+    DB["PostgreSQL"]
+    OCR["OCR (pytesseract)"]
+    AI["Ollama (LLaVA)"]
 
-User --> Frontend
-Frontend -->|HTTP (Axios)| Backend
+    User --> Frontend
+    Frontend --> Backend
+    Backend --> DB
 
-Backend --> DB
+    Backend --> OCR
+    Backend --> AI
 
-Backend --> OCR
-Backend --> AI
+    OCR --> Backend
+    AI --> Backend
 
-OCR --> Backend
-AI --> Backend
-
-Backend --> Frontend
+    Backend --> Frontend
 ```
 ---
 ## 🚀 Uzstādīšana un palaišana
