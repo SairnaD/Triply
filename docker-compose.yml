@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      - ollama
+    entrypoint: >
+      /bin/sh -c "
+      export OLLAMA_HOST=http://ollama:11434;
+      echo 'Waiting for Ollama...';
+      until ollama list > /dev/null 2>&1; do
+        sleep 2;
+      done;
+      echo 'Ollama is ready';
+      ollama list | grep -q llava || ollama pull llava;
+      "
+    restart: "no"
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend/app:/app/app
+      - ./uploads:/app/uploads
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/appdb
+      OLLAMA_API_URL: http://ollama:11434/api/generate
+    depends_on:
+      - db
+      - ollama
+      - ollama-init
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  ollama_data:

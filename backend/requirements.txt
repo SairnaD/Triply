@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+psycopg2-binary
+python-multipart
+requests
+python-dotenv
+pdf2image
+pytesseract 
+pillow
+openpyxl==3.1.2
+dateparser
+httpx
