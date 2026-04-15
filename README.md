@@ -2,7 +2,8 @@
 
 Finanšu dokumentu apstrādes platforma
 
-<img width="3240" height="1485" alt="logo" src="https://github.com/user-attachments/assets/37527cce-d150-40f4-b3fb-185e17441404" />
+<img width="3240" height="1485" alt="logo" src="https://github.com/user-attachments/assets/9383866b-455e-4616-bf59-98a353e6cf21" />
+
 
 ---
 ## 📌 Projekta apraksts
