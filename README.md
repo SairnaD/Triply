@@ -82,7 +82,7 @@ flowchart LR
 ---
 ## 🚀 Uzstādīšana un palaišana
 
-#🔧 Prasības
+# 🔧 Prasības
 
 - Docker
 - Docker Compose
