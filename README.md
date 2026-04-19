@@ -2,7 +2,10 @@
 
 Finanšu dokumentu apstrādes platforma
 
-<img width="3240" height="1485" alt="logo" src="https://github.com/user-attachments/assets/9383866b-455e-4616-bf59-98a353e6cf21" />
+
+<p>
+  <img width="3240" height="1485" alt="logo" src="https://github.com/user-attachments/assets/9383866b-455e-4616-bf59-98a353e6cf21" />
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/ollama-%23000000.svg?style=for-the-badge&logo=ollama&logoColor=white" />
