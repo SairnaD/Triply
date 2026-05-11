@@ -20,7 +20,7 @@ function DocumentsDrawer({ open, onClose, documents, onEdit }) {
             ]}
           >
             <div>
-              <b>{doc.category}</b> — ${doc.amount}
+              <b>{doc.category}</b> — €{doc.amount}
               <br />
               <small>{doc.date}</small>
             </div>

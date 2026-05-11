@@ -16,26 +16,67 @@ CATEGORY_MAP = {
     "прочее": "Other", "autre": "Other", "other": "Other"
 }
 
+def detect_currency(raw: str, ocr_text: str = "") -> str:
+    text = (raw + " " + ocr_text).upper()
+
+    if "$" in text or "USD" in text:
+        return "USD"
+    if "€" in text or "EUR" in text:
+        return "EUR"
+    if "£" in text or "GBP" in text:
+        return "GBP"
+    if "₽" in text or "RUB" in text:
+        return "RUB"
+
+    return "EUR"
+
+
+def extract_amount(raw: str) -> float:
+    raw = raw.replace(",", ".")
+    raw = re.sub(r"[^0-9.]", "", raw)
+    try:
+        return float(raw) if raw else 0.0
+    except:
+        return 0.0
+
+
 def map_category(cat: str) -> str:
     if not cat:
         return "Other"
     return CATEGORY_MAP.get(cat.lower(), "Other")
 
+
 # Currency exchange
-def convert_to_usd(amount: float, currency: str) -> float:
+def convert_to_eur(amount: float, currency: str) -> float:
     currency = currency.upper()
-    if currency == "USD":
-        return amount
+
+    if amount is None or amount == 0:
+        return 0.0
+
+    if currency == "EUR":
+        return round(amount, 2)
+
     try:
-        url = f"https://api.exchangerate.host/convert?from={currency}&to=USD&amount={amount}"
+        url = f"https://api.frankfurter.dev/v2/rates?base={currency}&quotes=EUR"
         resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+
         data = resp.json()
-        if data.get("success"):
-            return round(data["result"], 2)
-        else:
-            return amount
-    except:
-        return amount
+
+        if isinstance(data, list) and len(data) > 0:
+            rate = data[0].get("rate")
+
+            if rate is None:
+                raise ValueError("Missing rate in API response")
+
+            return round(amount * float(rate), 2)
+
+        raise ValueError("Invalid API response format")
+
+    except Exception as e:
+        print(f"Currency conversion error: {e}")
+        return None
+
 
 # PDF → IMAGE
 def pdf_to_image(pdf_path: str) -> str:
@@ -47,6 +88,7 @@ def pdf_to_image(pdf_path: str) -> str:
     page.save(output_path, "PNG")
     return str(output_path)
 
+
 # OCR
 def extract_text_ocr(image_path: str) -> str:
     try:
@@ -54,6 +96,7 @@ def extract_text_ocr(image_path: str) -> str:
         return pytesseract.image_to_string(img, lang="eng+rus+fra+deu+spa")
     except Exception as e:
         return f"OCR_ERROR: {str(e)}"
+
 
 # Cleaning the LLaVA respond
 def clean_llava_response(text: str) -> dict:
@@ -68,52 +111,35 @@ def clean_llava_response(text: str) -> dict:
     else:
         return {"raw_text": text}
 
+
 # Normalize
-def normalize_data(data: dict) -> dict:
+def normalize_data(data: dict, ocr_text: str = "") -> dict:
     if not isinstance(data, dict):
         return {"raw_text": str(data)}
 
-    amount = 0
-    currency = "USD"
-    if "amount" in data and data["amount"]:
-        raw = str(data["amount"]).strip()
-        raw = raw.replace(",", ".")
-        if raw.startswith("$"):
-            currency = "USD"
-            raw = raw.replace("$", "")
-        elif raw.startswith("€"):
-            currency = "EUR"
-            raw = raw.replace("€", "")
-        elif raw.startswith("₽"):
-            currency = "RUB"
-            raw = raw.replace("₽", "")
-        elif raw.startswith("£"):
-            currency = "GBP"
-            raw = raw.replace("£", "")
-        try:
-            amount = float(raw)
-        except:
-            amount = 0
-    amount_usd = convert_to_usd(amount, currency)
-    data["amount"] = round(amount_usd, 2)
+    raw = str(data.get("amount", "")).strip()
+
+    currency = detect_currency(raw, ocr_text)
+    amount = extract_amount(raw)
+
+    amount_eur = convert_to_eur(amount, currency)
+
+    data["amount"] = round(amount_eur, 2) if amount_eur is not None else None
 
     # Category
     cat = data.get("category", "")
-    cat = cat.strip().lower()
-    data["category"] = map_category(cat)
+    data["category"] = map_category(cat.strip().lower())
 
     # Date
     raw_date = data.get("date", "")
     if raw_date:
         parsed_date = dateparser.parse(raw_date, settings={'DATE_ORDER': 'DMY'})
-        if parsed_date:
-            data["date"] = parsed_date.strftime("%d/%m/%Y")
-        else:
-            data["date"] = None
+        data["date"] = parsed_date.strftime("%d/%m/%Y") if parsed_date else None
     else:
         data["date"] = None
 
     return data
+
 
 # Main analyze
 def analyze_document(file_path: str) -> dict:
@@ -132,13 +158,14 @@ def analyze_document(file_path: str) -> dict:
     # 4. Prompt
     prompt = f"""
 You are a strict receipt parser. The OCR text may be in any language.
+
 Rules:
 - Extract ONLY the FINAL TOTAL amount (number) with currency
 - Extract date of purchase
 - ALWAYS output date in format DD/MM/YYYY
-- Detect category in any language and map it to one of: Food, Transport, Hotel, Other
-- ALWAYS capitalize category
+- Detect category and map it to: Food, Transport, Hotel, Other
 Return ONLY JSON: {{ "amount": "...", "date": "...", "category": "..." }}
+
 OCR TEXT:
 {ocr_text}
 """
@@ -150,21 +177,24 @@ OCR TEXT:
         "stream": False
     }
 
-    # Retry and fallback
     MAX_RETRIES = 2
     for attempt in range(MAX_RETRIES):
         try:
             response = requests.post(OLLAMA_URL, json=payload, timeout=180)
             response.raise_for_status()
+
             data = response.json()
             text = data.get("response", "")
+
             parsed = clean_llava_response(text)
-            return normalize_data(parsed)
+
+            return normalize_data(parsed, ocr_text)
+
         except requests.exceptions.Timeout:
             if attempt < MAX_RETRIES - 1:
                 time.sleep(2)
                 continue
-            else:
-                return {"error": "timeout while contacting Ollama"}
+            return {"error": "timeout while contacting Ollama"}
+
         except Exception as e:
             return {"error": str(e)}
